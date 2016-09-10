@@ -73,6 +73,7 @@ server {
 ## create a wrap script
 ```
 vi /opt/sslcert/bin/getcert.sh
+chmod +x /opt/sslcert/bin/getcert.sh
 
 #!/bin/bash
 
@@ -89,7 +90,6 @@ php /opt/sslcert/bin/acme-client.php \
     -o /opt/sslcert/certs/domain.crt
 rm -f /opt/sslcert/acme-challenge/*
 
-chmod +x /opt/sslcert/bin/getcert.sh
 ```
 
 ## get cert
@@ -136,9 +136,9 @@ server {
 }
 ```
 
-## set crontab task to renew cert
+## set crontab task to renew cert (run every week)
 ```
 crontab -u sslcert -e
 
-0 0 1 * * /bin/bash /opt/sslcert/bin/getcert.sh
+0 0 * * 1 /bin/bash /opt/sslcert/bin/getcert.sh
 ```
