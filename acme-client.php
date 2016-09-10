@@ -15,7 +15,8 @@ function printUsage($prog_name)
          '-a <account_key_file> '.
          '-r <csr_file> '.
          '-d <domain_list(domain1;domain2...;domainN)> '.
-         '-c <http_challenge_dir>'.
+         '-c <http_challenge_dir> '.
+         '-o <output_cert_file>'.
          "\n";
 }
 
@@ -302,7 +303,7 @@ function domainChallenge($key, $domain,
     return true;
 }
 
-function issueCert($key, $csr)
+function issueCert($key, $csr, $output_cert_file)
 {
     $ret = signedHttpRequest($key,
         Config::$acme_url_base."/acme/new-cert", array(
@@ -317,19 +318,25 @@ function issueCert($key, $csr)
         return false;
     }
     
-    echo "-----BEGIN CERTIFICATE-----\n".
-         base64_encode($ret['response'])."\n".
-         "-----END CERTIFICATE-----\n";
+    if (file_put_contents($output_cert_file,
+            "-----BEGIN CERTIFICATE-----\n".
+            base64_encode($ret['response'])."\n".
+            "-----END CERTIFICATE-----\n") === false) {
+        return false;
+    }
+
+    return true;
 }
 
 function main($argc, $argv)
 {
     $prog_name = basename($argv[0]);
-    $cmd_options = getopt('a:r:d:c:');
+    $cmd_options = getopt('a:r:d:c:o:');
     if (!isset($cmd_options['a']) ||
         !isset($cmd_options['r']) ||
         !isset($cmd_options['d']) ||
-        !isset($cmd_options['c'])) {
+        !isset($cmd_options['c']) ||
+        !isset($cmd_options['o'])) {
         printUsage($prog_name);
         return false;
     }
@@ -338,6 +345,7 @@ function main($argc, $argv)
     $csr_file = $cmd_options['r'];
     $domain_list = explode(";", $cmd_options['d']);
     $http_challenge_dir = $cmd_options['c'];
+    $output_cert_file = $cmd_options['o'];
 
     // load account key
     $key = loadAccountKey($account_key_file);
@@ -371,7 +379,7 @@ function main($argc, $argv)
     }
 
     // issue cert
-    if (issueCert($key, $csr) === false) {
+    if (issueCert($key, $csr, $output_cert_file) === false) {
         return false;
     }
 
