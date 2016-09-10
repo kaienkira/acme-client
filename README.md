@@ -41,6 +41,8 @@ cp acme-client.php /opt/sslcert/bin
 mv account.key /opt/sslcert/keys
 mv domain.csr /opt/sslcert/keys
 mv domain.key /etc/ssl/private
+wget https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem \
+     -O /opt/sslcert/certs/lets-encrypt-x3-cross-signed.pem
 
 chown -R sslcert:sslcert /opt/sslcert/keys
 chown -R sslcert:sslcert /opt/sslcert/certs
@@ -88,6 +90,15 @@ php /opt/sslcert/bin/acme-client.php \
     -d "domain.com;www.domain.com" \
     -c /opt/sslcert/acme-challenge \
     -o /opt/sslcert/certs/domain.crt
+if [ $? -ne 0 ]
+then
+    exit 1
+fi
+
+cat /opt/sslcert/certs/domain.crt \
+    /opt/sslcert/certs/lets-encrypt-x3-cross-signed.pem \
+    > /opt/sslcert/certs/domain.chained.crt
+
 rm -f /opt/sslcert/acme-challenge/*
 
 ```
@@ -126,7 +137,7 @@ server {
     try_files $uri $uri/ =404;
 
     ssl on;
-    ssl_certificate /opt/sslcert/certs/domain.crt;
+    ssl_certificate /opt/sslcert/certs/domain.chained.crt;
     ssl_certificate_key /etc/ssl/private/domain.key;
     ssl_session_timeout 10m;
     ssl_session_cache shared:SSL:50m;
