@@ -314,7 +314,7 @@ function issueCert($key, $csr, $output_cert_file)
         return false;
     }
     if ($ret['http_code'] != 201) {
-        echo 'acme/challenge failed: '.$ret['response']."\n";
+        echo 'acme/new-cert failed: '.$ret['response']."\n";
         return false;
     }
     
