@@ -250,7 +250,7 @@ function domainChallenge($key, $domain,
     $http_challenge_dir, $thumb_print)
 {
     $ret = signedHttpRequest($key,
-        Config::$acme_url_base."/acme/new-authz", array( 
+        Config::$acme_url_base."/acme/new-authz", array(
         'resource' => 'new-authz',
         'identifier' => array(
             'type' => 'dns',
@@ -384,7 +384,6 @@ function main($argc, $argv)
     $http_challenge_dir = $cmd_options['c'];
     $output_cert_file = $cmd_options['o'];
     $tos = isset($cmd_options['t']) ? $cmd_options['t'] : '';
-
 
     // load account key
     $key = loadAccountKey($account_key_file);
