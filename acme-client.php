@@ -103,35 +103,27 @@ function signMessage($key, $message)
     return urlbase64($sign);
 }
 
-function getReplayNonce()
+function httpRequest($url, $method, $post_data = '')
 {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, Config::$acme_url_base."/directory");
+    curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
-    curl_setopt($ch, CURLOPT_NOBODY, true);
 
-    $output = curl_exec($ch);
-    if ($output === false) {
-        echo "curl failed: ".curl_error($ch)."\n";
+    $method = strtolower($method);
+    if ($method === 'head') {
+        // head method
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+    } else if ($method === 'get') {
+        // get method
+    } else if ($method === 'post') {
+        // post method
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+    } else {
+        echo "curl_failed: invalid http method";
         return false;
     }
-    curl_close($ch);
-
-    preg_match('/^Replay-Nonce: (.*?)\r\n/sm', $output, $matches);
-    if (!isset($matches[1])) {
-        echo "curl failed: replay nonce header is missing\n";
-        return false;
-    }
-
-    return $matches[1];
-}
-
-function httpRequest($url)
-{
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_URL, $url);
 
     $output = curl_exec($ch);
     if ($output === false) {
@@ -139,12 +131,33 @@ function httpRequest($url)
         return false;
     }
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    $header = substr($output, 0, $header_size);
+    $response = substr($output, $header_size);
+
     curl_close($ch);
 
     return array(
         'http_code' => $http_code,
-        'response' => $output,
+        'header' => $header,
+        'response' => $response,
     );
+}
+
+function getReplayNonce()
+{
+    $ret = httpRequest(Config::$acme_url_base.'/directory', 'head');
+    if ($ret === false) {
+        return false;
+    }
+
+    preg_match('/^Replay-Nonce: (.*?)\r\n/sm', $ret['header'], $matches);
+    if (!isset($matches[1])) {
+        echo "curl failed: replay nonce header is missing\n";
+        return false;
+    }
+
+    return $matches[1];
 }
 
 function signedHttpRequest($key, $url, $payload)
@@ -188,24 +201,7 @@ function signedHttpRequest($key, $url, $payload)
     );
     $request_data = json_encode($request_data);
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $request_data);
-
-    $output = curl_exec($ch);
-    if ($output === false) {
-        echo 'curl failed: '.curl_error($ch)."\n";
-        return false;
-    }
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    return array(
-        'http_code' => $http_code,
-        'response' => $output,
-    );
+    return httpRequest($url, 'post', $request_data);
 }
 
 function registerAccount($key)
@@ -281,7 +277,7 @@ function domainChallenge($key, $domain,
 
         // wait to be verified
         for (;;) {
-            $ret = httpRequest($challenge_uri);
+            $ret = httpRequest($challenge_uri, 'get');
             if ($ret === false) {
                 return false;
             }
@@ -305,6 +301,7 @@ function domainChallenge($key, $domain,
 
 function issueCert($key, $csr, $output_cert_file)
 {
+    // get cert
     $ret = signedHttpRequest($key,
         Config::$acme_url_base."/acme/new-cert", array(
         'resource' => 'new-cert',
@@ -317,10 +314,30 @@ function issueCert($key, $csr, $output_cert_file)
         echo 'acme/new-cert failed: '.$ret['response']."\n";
         return false;
     }
-    
+    $cert = base64_encode($ret['response']);
+
+    // get intermediate cert
+    preg_match('/^Link: <(.*?)>;rel="up"\r\n/sm', $ret['header'], $matches);
+    if (!isset($matches[1])) {
+        echo "acme/new-cert failed: can not get intermediate cert url";
+        return false;
+    }
+    $ret = httpRequest($matches[1], 'get');
+    if ($ret === false) {
+        return false;
+    }
+    if ($ret['http_code'] != 200) {
+        echo "acme/new-cert failed: can not get intermediate cert";
+        return false;
+    }
+    $intermediate_cert = base64_encode($ret['response']);
+
     if (file_put_contents($output_cert_file,
             "-----BEGIN CERTIFICATE-----\n".
-            base64_encode($ret['response'])."\n".
+            $cert."\n".
+            "-----END CERTIFICATE-----\n".
+            "-----BEGIN CERTIFICATE-----\n".
+            $intermediate_cert."\n".
             "-----END CERTIFICATE-----\n") === false) {
         return false;
     }
