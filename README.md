@@ -141,7 +141,7 @@ server {
     try_files $uri $uri/ =404;
 
     ssl on;
-    ssl_certificate /opt/sslcert/certs/domain.chained.crt;
+    ssl_certificate /opt/sslcert/certs/domain.crt;
     ssl_certificate_key /etc/ssl/private/domain.key;
     ssl_session_timeout 10m;
     ssl_session_cache shared:SSL:50m;
