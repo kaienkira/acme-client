@@ -121,7 +121,7 @@ function httpRequest($url, $method, $post_data = '')
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
     } else {
-        echo "curl_failed: invalid http method";
+        echo "curl_failed: invalid http method\n";
         return false;
     }
 
@@ -319,7 +319,7 @@ function issueCert($key, $csr, $output_cert_file)
     // get intermediate cert
     preg_match('/^Link: <(.*?)>;rel="up"\r\n/sm', $ret['header'], $matches);
     if (!isset($matches[1])) {
-        echo "acme/new-cert failed: can not get intermediate cert url";
+        echo "acme/new-cert failed: can not get intermediate cert url\n";
         return false;
     }
     $ret = httpRequest($matches[1], 'get');
@@ -327,7 +327,7 @@ function issueCert($key, $csr, $output_cert_file)
         return false;
     }
     if ($ret['http_code'] != 200) {
-        echo "acme/new-cert failed: can not get intermediate cert";
+        echo "acme/new-cert failed: can not get intermediate cert\n";
         return false;
     }
     $intermediate_cert = base64_encode($ret['response']);
