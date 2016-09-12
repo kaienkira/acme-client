@@ -1,5 +1,11 @@
 # acme-client
-a small tool to get and renew TLS certs from Let's Encrypt
+a small PHP tool to get and renew TLS certs from Let's Encrypt
+
+* Please Read The Lastest Terms of Service Of Let's Encrypt Before You Use this Script.
+  https://acme-v01.api.letsencrypt.org/terms
+* Please Audit The Code Before You Use It
+* Never Let The Script Run By Root
+* Never Let The Script Read Your Domain Private Key
 
 ## dependency
 ```
@@ -77,17 +83,27 @@ server {
 }
 ```
 
+## acme-client.php usage
+```
+usage: acme-client.php -a <account_key_file> -r <csr_file> 
+                       -d <domain_list(domain1;domain2...;domainN)>
+                       -c <http_challenge_dir>
+                       -o <output_cert_file>
+                       [-t <terms_of_service>]
+
+if -t command line option is set and it does not equal to the latest tos url,
+you will get a error like:
+
+terms of service has changed: please modify your -t command option
+new tos: <new_tos>
+```
+
 ## create a wrap script
 ```
 vi /opt/sslcert/bin/getcert.sh
 chmod +x /opt/sslcert/bin/getcert.sh
 
 #!/bin/bash
-
-# usage: acme-client.php -a <account_key_file> -r <csr_file> 
-#                        -d <domain_list(domain1;domain2...;domainN)>
-#                        -c <http_challenge_dir>
-#                        -o <output_cert_file>
 
 php /opt/sslcert/bin/acme-client.php \
     -a /opt/sslcert/keys/account.key \

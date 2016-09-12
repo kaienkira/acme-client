@@ -17,6 +17,7 @@ function printUsage($prog_name)
          '-d <domain_list(domain1;domain2...;domainN)> '.
          '-c <http_challenge_dir> '.
          '-o <output_cert_file>'.
+         '[-t <terms_of_service>]'.
          "\n";
 }
 
@@ -204,13 +205,32 @@ function signedHttpRequest($key, $url, $payload)
     return httpRequest($url, 'post', $request_data);
 }
 
-function registerAccount($key)
+function registerAccount($key, $tos)
 {
+    // get lastest tos
+    $ret = httpRequest(Config::$acme_url_base.'/terms', 'get');
+    if ($ret === false) {
+        return false;
+    }
+    preg_match('/^<a href="(.*?)">/sm', $ret['response'], $matches);
+    if (!isset($matches[1])) {
+        echo "acme/new-reg failed: get lastest tos failed\n";
+        return false;
+    }
+    $latest_tos = $matches[1];
+
+    if ($tos != '' && $tos != $latest_tos) {
+        echo "terms of service has changed: ".
+             "please modify your -t command option\n".
+             "new tos: $latest_tos\n";
+        return false;
+    }
+
     // register account
     $ret = signedHttpRequest($key,
         Config::$acme_url_base.'/acme/new-reg', array(
         'resource' => 'new-reg',
-        'agreement' => 'https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf',
+        'agreement' => $latest_tos,
     ));
     if ($ret === false) {
         return false;
@@ -348,7 +368,7 @@ function issueCert($key, $csr, $output_cert_file)
 function main($argc, $argv)
 {
     $prog_name = basename($argv[0]);
-    $cmd_options = getopt('a:r:d:c:o:');
+    $cmd_options = getopt('a:r:d:c:o:t:');
     if (!isset($cmd_options['a']) ||
         !isset($cmd_options['r']) ||
         !isset($cmd_options['d']) ||
@@ -363,6 +383,8 @@ function main($argc, $argv)
     $domain_list = explode(";", $cmd_options['d']);
     $http_challenge_dir = $cmd_options['c'];
     $output_cert_file = $cmd_options['o'];
+    $tos = isset($cmd_options['t']) ? $cmd_options['t'] : '';
+
 
     // load account key
     $key = loadAccountKey($account_key_file);
@@ -377,7 +399,7 @@ function main($argc, $argv)
     }
 
     // register account
-    if (registerAccount($key) === false) {
+    if (registerAccount($key, $tos) === false) {
         return false;
     }
 
