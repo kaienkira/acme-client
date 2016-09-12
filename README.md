@@ -1,7 +1,7 @@
 # acme-client
 a small PHP tool to get and renew TLS certs from Let's Encrypt
 
-* Please Read The Lastest Terms of Service Of Let's Encrypt Before You Use this Script.
+* Please Read The Lastest Terms of Service Of Let's Encrypt Before You Use this Script.  
   https://acme-v01.api.letsencrypt.org/terms
 * Please Audit The Code Before You Use It
 * Never Let The Script Run By Root
