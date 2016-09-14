@@ -40,6 +40,23 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
 * **custom dh paramters** (optional)
   * fix the weak Diffie-Hellman and the logjam attack issue
 
+# Script Usage
+```
+usage: acme-client.php
+    -a <account_key_file>
+    -r <csr_file> 
+    -d <domain_list(domain1;domain2...;domainN)>
+    -c <http_challenge_dir>
+    -o <output_cert_file>
+    [-t <terms_of_service>]
+
+if -t command line option is set and it does not equal to the latest tos url,
+you will get a error like:
+
+terms of service has changed: please modify your -t command option
+new tos: <new_tos>
+```
+
 # Detail Guide
 ## dependency
 ```
@@ -103,34 +120,19 @@ chmod 600 /etc/ssl/private/dhparams.pem
 ```
 server {
     listen 80 default_server;
-
-    ...
-
     server_name domain.com www.domain.com;
+
+    root /opt/www/html;
+    index index.html;
     try_files $uri $uri/ =404;
 
     location /.well-known/acme-challenge/ {
         default_type text/plain;
         alias /opt/sslcert/acme-challenge/;
     }
-
-    ...
 }
-```
 
-## acme-client.php usage
-```
-usage: acme-client.php -a <account_key_file> -r <csr_file> 
-                       -d <domain_list(domain1;domain2...;domainN)>
-                       -c <http_challenge_dir>
-                       -o <output_cert_file>
-                       [-t <terms_of_service>]
-
-if -t command line option is set and it does not equal to the latest tos url,
-you will get a error like:
-
-terms of service has changed: please modify your -t command option
-new tos: <new_tos>
+service nginx reload
 ```
 
 ## create a wrap script
@@ -163,7 +165,7 @@ rm -f -- /opt/sslcert/acme-challenge/*
 su -s /bin/bash -c '/opt/sslcert/bin/getcert.sh' sslcert
 ```
 
-## nginx ssl conf
+## final nginx ssl conf
 ```
 server {
     listen 80 default_server;
@@ -202,6 +204,8 @@ server {
     ssl_prefer_server_ciphers on;
     ssl_dhparam /etc/ssl/private/dhparams.pem;
 }
+
+service nginx reload
 ```
 
 ## set crontab task to renew cert (run every week)
