@@ -10,14 +10,16 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
   https://www.ssllabs.com/ssltest/
 
 # What you need to use this script to setup a https website
-* account private key (to register and communicate with acme server)
+* account private key
+  * used to register and communicate with acme server
   * the script need the read access of the account key
-* domain private key (your website ssl private key)  
+* domain private key
+  * used as your website ssl private key
   * it must be different from your account private key for security
   * keep it in safe place, don't let the script read it
 * csr file (Certificate Signing Request)
-  * can be generated from your domain private key
   * used to request the cert from CA
+  * can be generated from your domain private key
   * the script need the read access of the csr file
 * http challenge dir (which can be access by your domain)
   * used to prove the domain is in your control, acme server will
@@ -25,7 +27,8 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
     http://yourdomain.com/.well-known/acme-challenge/<challenge_file_name>
   * the script need the write access of the http challenge dir
   * the script will put the challenge file in this dir
-* a new user to run this script
+* a new user
+  * used to run this script
   * for security, never run this script by root
   * the user can not login from ssh  
     (set your /etc/passwd to disable login for the new user)
