@@ -27,7 +27,7 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
   * the script will put the challenge file in this dir
 * a new user to run this script
   * for security, never run this script by root
-  * can not login from ssh  
+  * the user can not login from ssh  
     (set your /etc/passwd to disable login for the new user)
   * the user can not read the domain private key
   * the user can read the account private key, csr file only
