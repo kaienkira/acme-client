@@ -1,15 +1,45 @@
 # acme-client
-a small PHP tool to get and renew TLS certs from Let's Encrypt
+a small PHP script to get and renew TLS certs from Let's Encrypt
 
 * Please Read The Lastest Terms of Service Of Let's Encrypt Before You Use this Script.  
   https://acme-v01.api.letsencrypt.org/terms
 * Please Audit The Code Before You Use It
 * Never Let The Script Run By Root
 * Never Let The Script Read Your Domain Private Key
+* use ssl server test to check your website's security  
+  https://www.ssllabs.com/ssltest/
+
+# what you need to use this script to setup a https website
+* account private key (to register and communicate with acme server)
+  * the script need the read access of the account key
+* domain private key (your website ssl private key)  
+  * it must be different from your account private key for security
+  * keep it in safe place, don't let the script read it
+* csr file (Certificate Signing Request)
+  * can be generated from your domain private key
+  * used to request the cert from CA
+  * the script need the read access of the csr file
+* http challenge dir (which can be access by your domain)
+  * used to prove the domain is in your control, acme server will
+    access your domain like  
+    http//yourdomain.com/.well-known/acme-challenge/<challenge_file_name>
+  * the script need the write access of the http challenge dir
+  * the script will put the challenge file in this dir
+* a new user to run this script
+  * for security, never run this script by root
+  * can not login from ssh  
+    (set your /etc/passwd to disable login for the new user)
+  * the user can not read the domain private key
+  * the user can read the account private key, csr file only
+  * the user can write to the http challenge dir 
+  * set the renew cert crontab task for this user  
+    (Let's Encrypt cert will exprired about 90 days)
+* custom dh paramters (optional)
+  * fix the weak Diffie-Hellman and the logjam attack issue
 
 ## dependency
 ```
-openssl php-cli php-curl
+sudo apt-get install php-cli php-curl
 ```
 
 ## generate account private key
