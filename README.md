@@ -22,7 +22,7 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
 * http challenge dir (which can be access by your domain)
   * used to prove the domain is in your control, acme server will
     access your domain like  
-    http//yourdomain.com/.well-known/acme-challenge/<challenge_file_name>
+    http://yourdomain.com/.well-known/acme-challenge/<challenge_file_name>
   * the script need the write access of the http challenge dir
   * the script will put the challenge file in this dir
 * a new user to run this script
