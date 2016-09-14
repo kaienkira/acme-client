@@ -9,7 +9,7 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
 * use ssl server test to check your website's security  
   https://www.ssllabs.com/ssltest/
 
-# what you need to use this script to setup a https website
+# What you need to use this script to setup a https website
 * account private key (to register and communicate with acme server)
   * the script need the read access of the account key
 * domain private key (your website ssl private key)  
@@ -37,7 +37,7 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
 * custom dh paramters (optional)
   * fix the weak Diffie-Hellman and the logjam attack issue
 
-# detail guide
+# Detail Guide
 ## dependency
 ```
 # install php-cli first
@@ -208,5 +208,5 @@ crontab -u sslcert -e
 0 0 * * 1 /bin/bash /opt/sslcert/bin/getcert.sh
 ```
 
-## Thanks
+# Thanks
 tialaramex@reddit
