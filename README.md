@@ -37,8 +37,10 @@ a small PHP script to get and renew TLS certs from Let's Encrypt
 * custom dh paramters (optional)
   * fix the weak Diffie-Hellman and the logjam attack issue
 
+# detail guide
 ## dependency
 ```
+# install php-cli first
 sudo apt-get install php-cli php-curl
 ```
 
