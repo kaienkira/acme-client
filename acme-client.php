@@ -354,10 +354,10 @@ function issueCert($key, $csr, $output_cert_file)
 
     if (file_put_contents($output_cert_file,
             "-----BEGIN CERTIFICATE-----\n".
-            $cert."\n".
+            chunk_split($cert, 64, "\n").
             "-----END CERTIFICATE-----\n".
             "-----BEGIN CERTIFICATE-----\n".
-            $intermediate_cert."\n".
+            chunk_split($intermediate_cert, 64, "\n").
             "-----END CERTIFICATE-----\n") === false) {
         return false;
     }
