@@ -1,6 +1,8 @@
-# acme-client
-a small PHP script to get and renew TLS certs from Let's Encrypt
+# acme-client (Deprecated)
+a small PHP script to get and renew TLS certs from Let's Encrypt (Deprecated)
 
+* ACME v1 is deprecated,
+  Please Use https://github.com/kaienkira/acme-v2-client instead
 * Please Read The Lastest Terms of Service Of Let's Encrypt Before You Use this Script.  
   https://acme-v01.api.letsencrypt.org/terms
 * Please Audit The Code Before You Use It
